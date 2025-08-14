@@ -24,5 +24,6 @@ This repository showcases my interest in financial modeling, data analysis, prog
 ### DCF with Vasicek
 
 ## Data-driven simulations
-### Drift and Volatility for GBM model
-### Long-run mean level and Volatility for the Vasicek SDE and DCF model
+### Estimation of drift and volatility for GBM from market price data
+### Estimation of long-run mean & volatility for Vasicek interest rate models
+### Calibration from historical datasets to make forward-looking simulations

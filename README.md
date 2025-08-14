@@ -4,6 +4,8 @@ Numerical simulation of deterministic and stochastic financial models using Rung
 This repository showcases my interest in financial modeling, data analysis, programming, and mathematics. While studying physics, I developed a strong fascination with the mathematical and computational aspects of financial markets. This project represents a selection of my personal work exploring such models.
 ## Core Solver
 ### Runge-Kutta 4
+
+
 ### Euler-Maruyama Step
 ## Deterministic Models
 ### Single Asset Model
@@ -11,7 +13,7 @@ This repository showcases my interest in financial modeling, data analysis, prog
 ### Feedback Rate Growth Models
 #### Diminishing returns
 #### Cost-of-debt Feedback
-## Stochastic Models with Monte Carlo simulations
+## Stochastic Models (Monte Carlo simulations)
 ### Geometric Brownian Motion, GBM
 #### Constant drift and volatility
 #### Time Dependent drift and volatility

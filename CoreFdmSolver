@@ -3,7 +3,7 @@ import numpy as np
 class ODEModel:
     """
 
-    A class modelling an Ordinary Differential Equation of the form D_t(x)=f(x,t).
+    A class modelling an Ordinary Differential Equation of the form D_t(x)=RHS(t, x, params=...).
 
     ********
 
@@ -16,7 +16,7 @@ class ODEModel:
         self.RHS = F
     
     def __str__(self):
-        return 'D(Vec[y])=Vec['+str(self.RHS)+']'
+        return 'dx/dt='+str(self.RHS)
 
 class RK4Solve:
     """ 
@@ -39,27 +39,27 @@ class RK4Solve:
     ********
     
     Methods:
-    next_step(t : float, x : np.array, params : np.array) -> np.array : 
-    Takes initial values x and time t to give the value x at time t + i*self.tstep.
+    next_step(t : float, x : np.ndarray, params : np.ndarray) -> np.ndarray : 
+    Takes initial values x and time t to give the value x at time t + self.tstep.
 
-    solve(t : float, x : np.array, paramsarr : np.array) -> Tuple[np.array, np.array] : 
-    Takes inital values x and time t to give the full simulated data of all values x at all times t.
+    solve(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[np.ndarray , np.ndarray (with shape: (state_dim, n_steps+1))]  : 
+    Takes initial values x and time t to give the full simulated data of all values x at all times t. (paramsarr.shape == (param_dim, n_steps))
 
     """
 
     def __init__(self, D : ODEModel, h: float, n : int):
         self.eq = D
-        self.tstep = h
-        self.nsteps = n
+        self.tstep = float(h)
+        self.nsteps = int(n)
     
-    def next_step(self,t: float ,  x : np.array, params : np.array):
+    def next_step(self,t: float ,  x : np.ndarray, params : np.ndarray):
         k1 = self.tstep*self.eq.RHS(t, x, params)
         k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
         k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
         k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
-    def solve(self, t : float,x : np.array, paramsarr : np.array):
+    def solve(self, t : float,x : np.ndarray, paramsarr : np.ndarray):
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))
@@ -100,7 +100,7 @@ class EulerMaruyamaMonteCarlo:
 
     """
 
-    A class that models a simulator to a SDE using the Euler-Maruyama alogirthm and the Monte Carlo method.
+    A class that models a simulator to a SDE using the Euler-Maruyama algorithm and the Monte Carlo method.
 
     ********
 
@@ -119,26 +119,26 @@ class EulerMaruyamaMonteCarlo:
 
     Methods:
 
-    next_step_monte_carlo(t : float, x: np.array, params : np.array) -> np.array : 
+    next_step_monte_carlo(t : float, x: np.ndarray, params : np.ndarray) -> np.ndarray : 
     Takes in an array vector x filled with the starting value, the starting time t
     and the parameters array params and return vector of the same shape as x but after
-    time i*self.tstep, each component is a different path of the stochastic process.
+    time self.tstep, each component is a different path of the stochastic process.
 
-    simulate(t : float, x : np.array, paramsarr : np.array) -> Tuple[np.array,np.array] : 
-    Gives all the steps of all paths in the array x and additinally returns the correspoding times t.
+    simulate(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[np.ndarray,np.ndarray (with shape: (paths, n_steps+1))] : 
+    Gives all the steps of all paths in the array x and additionally returns the corresponding times t. (paramsarr.shape == (param_dim, n_steps))
 
     """
 
     def __init__(self, Model : SDEModel, h : float, n : int):
         self.model = Model
-        self.tstep = h
-        self.nsteps = n
+        self.tstep = float(h)
+        self.nsteps = int(n)
     
-    def next_step_monte_carlo(self, t : float, x : np.array, params : np.array):
+    def next_step_monte_carlo(self, t : float, x : np.ndarray, params : np.ndarray):
         dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
         return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def simulate(self, t : float, x : np.array, paramsarr : np.array):
+    def simulate(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))
@@ -154,16 +154,16 @@ class EulerMaruyamaMonteCarlo:
 class MonteCarloSummary:
     """
     
-    A class ment to model a data structure which has many stochastic walks in some time interval.
+    A class meant to model a data structure which has many stochastic walks in some time interval.
 
     ********
 
     Parameters:
     
-    times : np.array
+    times : np.ndarray
     The time data points on the wanted interval.
 
-    value : np.array
+    value : np.ndarray
     The row vectors contain the different walks/paths of the stochastic process.
 
     ********
@@ -173,15 +173,15 @@ class MonteCarloSummary:
     time_series_summary() -> dict
     Calculates most statistics for each time step of the different paths.
 
-    terminal_value() -> np.array
-    Returns the last coulumn vector, practically giving the distribution of the random variable that we want to solve
+    terminal_value() -> np.ndarray
+    Returns the last column vector, practically giving the distribution of the random variable that we want to solve
 
-    risk_summart -> dict
-    Reuturns values of VaR95, CVaR95
+    risk_summary -> dict
+    Returns values of VaR95, CVaR95
 
     """
 
-    def __init__(self, times : np.array, value : np.array):
+    def __init__(self, times : np.ndarray, value : np.ndarray):
         self.times = times
         self.value = value
 
@@ -198,7 +198,7 @@ class MonteCarloSummary:
         return self.value[:,-1]
     
     def risk_summary(self):
-        TerminalReturn = self.value[:,-1]/self.value[0,0]-1
+        TerminalReturn = self.value[:,-1]/self.value[0,0]-1 #Assumes that all paths have same start point!
         TerminalLoss = - TerminalReturn
         VaR95 = np.quantile(TerminalLoss, 0.95)
         mask = TerminalLoss >= VaR95

@@ -16,14 +16,23 @@ class RK4Solve:
         self.tstep = h
         self.nsteps = n
     
-    def nextstep(self,t: float ,  x : np.array, params):
+    def NextStep(self,t: float ,  x : np.array, params):
         k1 = self.tstep*self.eq.RHS(t, x, params)
         k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
         k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
         k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
-    def solve(self, x, t, paramsarr = 1):
+    def solve(self, x : np.array, t : float, paramsarr):
+        n1x = np.shape(x)
+        time = np.zeros(self.nsteps)
+        value = np.zeros((n1x,self.nsteps))
+        value[:,0] = x
+        time[0] = t
+        for i in range(1,self.nsteps):
+            value[:,i] = self.NextStep(time[i-1], value[:,i-1], paramsarr[:,i])
+            time[i] = t + i*self.tstep
+        return time, value
         
 
 
@@ -39,19 +48,37 @@ class SDEModel:
     
 class EulerMaruyamaMonteCarlo:
 
-    def __init__(self, Model : SDEModel, h : float):
+    def __init__(self, Model : SDEModel, h : float, n : int):
         self.model = Model
         self.tstep = h
+        self.nsteps = n
     
-    def NextStepMonteCarlo(self, x : np.array, t : float):
+    def NextStepMonteCarlo(self, x : np.array, t : float, params):
         dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
-        return x + self.model.func_dt(x,t)*self.tstep + self.model.func_dW(x,t)*dW_t
+        return x + self.model.func_dt(x,t, params)*self.tstep + self.model.func_dW(x,t, params)*dW_t
+    
+    def Simulate(self, x, t, paramsarr):
+        n1x = np.shape(x)
+        time = np.zeros(self.nsteps)
+        value = np.zeros((n1x,self.nsteps))
+        value[:,0] = x
+        time[0] = t
+        for i in range(1,self.nsteps):
+            value[:,i] = self.NextStepMonteCarlo( value[:,i-1], time[i-1], paramsarr[:,i])
+            time[i] = t + i*self.tstep
+        return time, value
     
 
     
 class MonteCarloSummary:
 
-    def __init__(self, )
+    def __init__(self, times : np.array, value : np.array):
+        self.times = times
+        self.value = value
+
+    def TimeSeriesSummary(self):
+        return {'time': self.times, 'StandardDeviation': np.std}
+        
 
          
 

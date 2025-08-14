@@ -1,26 +1,32 @@
 import numpy as np
 
-
 class ODEModel:
     
-    def __init__(self, F):
+    def __init__(self, F, params):
         self.RHS = F
+        self.params = params
     
     def __str__(self):
         return 'D(Vec[y])=Vec['+str(self.RHS)+']'
 
 class RK4Solve:
 
-    def __init__(self, D : ODEModel, h: float):
+    def __init__(self, D : ODEModel, h: float, n : int):
         self.eq = D
         self.tstep = h
+        self.nsteps = n
     
-    def nextstep(self,t: float ,  x : np.array):
-        k1 = self.tstep*self.eq.RHS(t, x)
-        k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2)
-        k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2)
-        k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3)
+    def nextstep(self,t: float ,  x : np.array, params):
+        k1 = self.tstep*self.eq.RHS(t, x, params)
+        k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
+        k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
+        k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
+    
+    def solve(self, x, t, paramsarr = 1):
+        
+
+
     
 class SDEModel:
 
@@ -31,12 +37,21 @@ class SDEModel:
     def __str__(self):
         return 'dX_t= ' + str(self.func_dt) + '*dt + ' + str(self.func_dW) + '*dW_t'
     
-class EulerMaruyama:
+class EulerMaruyamaMonteCarlo:
 
     def __init__(self, Model : SDEModel, h : float):
         self.model = Model
         self.tstep = h
     
-    def nextstep(self, x : float, t : float):
-        dW_t = np.random.normal(0, np.sqrt(self.tstep))
+    def NextStepMonteCarlo(self, x : np.array, t : float):
+        dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
         return x + self.model.func_dt(x,t)*self.tstep + self.model.func_dW(x,t)*dW_t
+    
+
+    
+class MonteCarloSummary:
+
+    def __init__(self, )
+
+         
+

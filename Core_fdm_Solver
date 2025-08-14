@@ -1,43 +1,42 @@
 import numpy as np
 
 
-class ODEModel: # Saves the information of the model in question given that the ODE model is give in a manned \vec{\dot x}= f(t,\vec x) 
+class ODEModel:
     
-    def __init__(self, n : int, F : function): 
-        self.order = n
+    def __init__(self, F):
         self.RHS = F
     
     def __str__(self):
         return 'D(Vec[y])=Vec['+str(self.RHS)+']'
 
-class RK4_Solve:
+class RK4Solve:
 
     def __init__(self, D : ODEModel, h: float):
         self.eq = D
         self.tstep = h
     
-    def step(self,t0: float ,  x0 : np.array):
-        k1 = self.tstep*self.eq.RHS(t0, x0)
-        k2 = self.tstep*self.eq.RHS(t0 + self.tstep/2, x0 + k1/2)
-        k3 = self.tstep*self.eq.RHS(t0 + self.tstep/2, x0 + k2/2)
-        k4 = self.tstep*self.eq.RHS(t0 + self.tstep, x0 + k3)
-        return x0 + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
+    def step(self,t: float ,  x : np.array):
+        k1 = self.tstep*self.eq.RHS(t, x)
+        k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2)
+        k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2)
+        k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3)
+        return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
 class SDEModel:
 
-    def __init__(self, a : function, b : function):
+    def __init__(self, a, b):
         self.func_dt = a
         self.func_dW = b
 
     def __str__(self):
         return 'dX_t= ' + str(self.func_dt) + '*dt + ' + str(self.func_dW) + '*dW_t'
     
-class Euler_Maruyama:
+class EulerMaruyama:
 
-    def __init__(self, Model : SDEModel, h : int):
+    def __init__(self, Model : SDEModel, h : float):
         self.model = Model
         self.tstep = h
     
-    def step(self, x0, t0):
-        dW_t = np.random.normal(0, self.tstep)
-        return x0 + self.model.func_dt(x0,t0)*self.tstep + self.model.func_dW(x0,t0)*dW_t
+    def step(self, x, t):
+        dW_t = np.random.normal(0, np.sqrt(self.tstep))
+        return x + self.model.func_dt(x,t)*self.tstep + self.model.func_dW(x,t)*dW_t

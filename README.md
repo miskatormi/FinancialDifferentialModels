@@ -4,7 +4,9 @@ Numerical simulation of deterministic and stochastic financial models using Rung
 This repository showcases my interest in financial modeling, data analysis, programming, and mathematics. While studying physics, I developed a strong fascination with the mathematical and computational aspects of financial markets. This project represents a selection of my personal work exploring such models.
 ## Core Solver
 ### Runge-Kutta 4
-
+### Analysis tools
+#### Sensitivity analysis
+#### Monte Carlo summary
 
 ### Euler-Maruyama Step
 ## Deterministic Models
@@ -19,9 +21,7 @@ This repository showcases my interest in financial modeling, data analysis, prog
 #### Time Dependent drift and volatility
 ### Vasicek SDE
 ### DCF with Vasicek
-## Analysis tools
-### Sensitivity analysis
-### Monte Carlo summary
+
 ## Data-driven simulations
 ### Drift and Volatility for GBM model
 ### Long-run mean level and Volatility for the Vasicek SDE and DCF model

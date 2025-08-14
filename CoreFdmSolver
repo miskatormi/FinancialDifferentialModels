@@ -6,11 +6,13 @@ class ODEModel:
     A class modelling an Ordinary Differential Equation of the form D_t(x)=f(x,t).
 
     ********
+
     Parameters:
+
     F : callable (function) (RHS meaning the right hand side of the ODE)
 
     """
-    def __init__(self, F, params):
+    def __init__(self, F):
         self.RHS = F
     
     def __str__(self):
@@ -80,7 +82,9 @@ class SDEModel:
     ********
 
     Parameters:
+
     a : callable (function)
+
     b : callable (function)
 
     """
@@ -148,6 +152,34 @@ class EulerMaruyamaMonteCarlo:
 
     
 class MonteCarloSummary:
+    """
+    
+    A class ment to model a data structure which has many stochastic walks in some time interval.
+
+    ********
+
+    Parameters:
+    
+    times : np.array
+    The time data points on the wanted interval.
+
+    value : np.array
+    The row vectors contain the different walks/paths of the stochastic process.
+
+    ********
+
+    Methods:
+
+    time_series_summary() -> dict
+    Calculates most statistics for each time step of the different paths.
+
+    terminal_value() -> np.array
+    Returns the last coulumn vector, practically giving the distribution of the random variable that we want to solve
+
+    risk_summart -> dict
+    Reuturns values of VaR95, CVaR95
+
+    """
 
     def __init__(self, times : np.array, value : np.array):
         self.times = times

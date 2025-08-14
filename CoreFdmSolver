@@ -37,10 +37,10 @@ class RK4Solve:
     ********
     
     Methods:
-    next_step(t : float, x : np.array, params : np.array) -> np.array
+    next_step(t : float, x : np.array, params : np.array) -> np.array : 
     Takes initial values x and time t to give the value x at time t + i*self.tstep.
 
-    solve(t : float, x : np.array, paramsarr : np.array) -> Tuple[np.array, np.array]
+    solve(t : float, x : np.array, paramsarr : np.array) -> Tuple[np.array, np.array] : 
     Takes inital values x and time t to give the full simulated data of all values x at all times t.
 
     """
@@ -96,7 +96,32 @@ class EulerMaruyamaMonteCarlo:
 
     """
 
-    A class that models a solution to a SDE using the Euler-Maruyama alogirthm and the Monte Carlo method.
+    A class that models a simulator to a SDE using the Euler-Maruyama alogirthm and the Monte Carlo method.
+
+    ********
+
+    Parameters:
+
+    Model : SDEModel
+    The SDE we want to solve
+
+    h : float
+    Size of the time step
+
+    n : int
+    The total number of steps in the simulation
+
+    ********
+
+    Methods:
+
+    next_step_monte_carlo(t : float, x: np.array, params : np.array) -> np.array : 
+    Takes in an array vector x filled with the starting value, the starting time t
+    and the parameters array params and return vector of the same shape as x but after
+    time i*self.tstep, each component is a different path of the stochastic process.
+
+    simulate(t : float, x : np.array, paramsarr : np.array) -> Tuple[np.array,np.array] : 
+    Gives all the steps of all paths in the array x and additinally returns the correspoding times t.
 
     """
 
@@ -105,11 +130,11 @@ class EulerMaruyamaMonteCarlo:
         self.tstep = h
         self.nsteps = n
     
-    def next_step_monte_carlo(self, t : float,x : np.array, params): # x here represents starting point for all separate simulations what we calculate vectorized
+    def next_step_monte_carlo(self, t : float, x : np.array, params : np.array):
         dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
         return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def simulate(self, t, x, paramsarr):
+    def simulate(self, t : float, x : np.array, paramsarr : np.array):
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))

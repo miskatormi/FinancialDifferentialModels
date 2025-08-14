@@ -5,21 +5,25 @@ This repository showcases my interest in financial modeling, data analysis, prog
 ## Core Solver
 ### Runge-Kutta 4
 ### Euler-Maruyama Step
+### Analysis tools
+#### Sensitivity analysis
+#### Monte Carlo summary
+
+
 ## Deterministic Models
 ### Single Asset Model
 ### Multi Asset Model
 ### Feedback Rate Growth Models
 #### Diminishing returns
 #### Cost-of-debt Feedback
-## Stochastic Models with Monte Carlo simulations
+## Stochastic Models (Monte Carlo simulations)
 ### Geometric Brownian Motion, GBM
 #### Constant drift and volatility
 #### Time Dependent drift and volatility
 ### Vasicek SDE
 ### DCF with Vasicek
-## Analysis tools
-### Sensitivity analysis
-### Monte Carlo summary
+
 ## Data-driven simulations
-### Drift and Volatility for GBM model
-### Long-run mean level and Volatility for the Vasicek SDE and DCF model
+### Estimation of drift and volatility for GBM from market price data
+### Estimation of long-run mean & volatility for Vasicek interest rate models
+### Calibration from historical datasets to make forward-looking simulations

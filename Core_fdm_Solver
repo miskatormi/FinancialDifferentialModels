@@ -23,14 +23,14 @@ class RK4Solve:
         k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
-    def solve(self, x : np.array, t : float, paramsarr):
-        n1x = np.shape(x)
-        time = np.zeros(self.nsteps)
-        value = np.zeros((n1x,self.nsteps))
+    def solve(self, t : float,x : np.array, paramsarr):
+        n1x = np.shape(x)[0]
+        time = np.zeros(self.nsteps+1)
+        value = np.zeros((n1x,self.nsteps+1))
         value[:,0] = x
         time[0] = t
-        for i in range(1,self.nsteps):
-            value[:,i] = self.NextStep(time[i-1], value[:,i-1], paramsarr[:,i])
+        for i in range(1,self.nsteps+1):
+            value[:,i] = self.NextStep(time[i-1], value[:,i-1], paramsarr[:,i-1])
             time[i] = t + i*self.tstep
         return time, value
         
@@ -53,18 +53,18 @@ class EulerMaruyamaMonteCarlo:
         self.tstep = h
         self.nsteps = n
     
-    def NextStepMonteCarlo(self, x : np.array, t : float, params):
+    def NextStepMonteCarlo(self, t : float,x : np.array, params): # x here represents starting point for all separate simulations what we calculate vectorized
         dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
-        return x + self.model.func_dt(x,t, params)*self.tstep + self.model.func_dW(x,t, params)*dW_t
+        return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def Simulate(self, x, t, paramsarr):
-        n1x = np.shape(x)
-        time = np.zeros(self.nsteps)
-        value = np.zeros((n1x,self.nsteps))
+    def Simulate(self, t, x, paramsarr):
+        n1x = np.shape(x)[0]
+        time = np.zeros(self.nsteps+1)
+        value = np.zeros((n1x,self.nsteps+1))
         value[:,0] = x
         time[0] = t
-        for i in range(1,self.nsteps):
-            value[:,i] = self.NextStepMonteCarlo( value[:,i-1], time[i-1], paramsarr[:,i])
+        for i in range(1,self.nsteps+1):
+            value[:,i] = self.NextStepMonteCarlo(time[i-1], value[:,i-1], paramsarr[:,i-1])
             time[i] = t + i*self.tstep
         return time, value
     
@@ -77,7 +77,23 @@ class MonteCarloSummary:
         self.value = value
 
     def TimeSeriesSummary(self):
-        return {'time': self.times, 'StandardDeviation': np.std}
+        return {'time': self.times,
+                'Mean': np.mean(self.value, axis=0),
+                'Median': np.median(self.value, axis=0),
+                'StandardDeviation': np.std(self.value, axis=0),
+                'Max':np.max(self.value, axis=0),
+                'Min':np.min(self.value, axis=0),
+                'quantiles': {q : np.quantile(self.value,q, axis=0) for q in [0.05,0.25,0.50,0.75,0.95]}}
+    
+    def TerminalValue(self):
+        return self.value[:,-1]
+    
+    def RiskSummary(self):
+        TerminalReturn = self.value[:,-1]/self.value[0,0]-1
+        TerminalLoss = - TerminalReturn
+        VaR95 = np.quantile(TerminalLoss, 0.95)
+        mask = TerminalLoss >= VaR95
+        return {'VaR95' : VaR95, 'CVaR95' : np.mean(TerminalLoss[mask])}
         
 
          

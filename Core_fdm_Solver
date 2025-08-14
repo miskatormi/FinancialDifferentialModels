@@ -15,7 +15,7 @@ class RK4Solve:
         self.eq = D
         self.tstep = h
     
-    def step(self,t: float ,  x : np.array):
+    def nextstep(self,t: float ,  x : np.array):
         k1 = self.tstep*self.eq.RHS(t, x)
         k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2)
         k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2)
@@ -37,6 +37,6 @@ class EulerMaruyama:
         self.model = Model
         self.tstep = h
     
-    def step(self, x, t):
+    def nextstep(self, x : float, t : float):
         dW_t = np.random.normal(0, np.sqrt(self.tstep))
         return x + self.model.func_dt(x,t)*self.tstep + self.model.func_dW(x,t)*dW_t

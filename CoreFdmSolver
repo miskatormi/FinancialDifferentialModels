@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
 
 class ODEModel:
     """
@@ -213,23 +214,29 @@ class MonteCarloSummary:
         self.value = value
 
     def time_series_summary(self):
+        if self.value[0,0] == 0:
+            VaR95 = np.nan
+            CVaR95 = np.nan
+            print('Starting value cannot be zero for some statistics')
+        else:
+            TerminalReturn = self.value[:,-1]/self.value[0,0]-1 #Assumes that all paths have same start point!
+            TerminalLoss = - TerminalReturn
+            VaR95 = np.quantile(TerminalLoss, 0.95)
+            mask = TerminalLoss >= VaR95
+            CVaR95 = np.mean(TerminalLoss[mask])
         return {'time': self.times,
                 'Mean': np.mean(self.value, axis=0),
                 'Median': np.median(self.value, axis=0),
                 'StandardDeviation': np.std(self.value, axis=0),
                 'Max':np.max(self.value, axis=0),
                 'Min':np.min(self.value, axis=0),
-                'quantiles': {q : np.quantile(self.value,q, axis=0) for q in [0.05,0.25,0.50,0.75,0.95]}}
+                'quantiles': {q : np.quantile(self.value,q, axis=0) for q in [0.05,0.25,0.50,0.75,0.95]},
+                'VaR95' : VaR95,
+                'CVaR95' : CVaR95
+                }
     
     def terminal_value(self):
         return self.value[:,-1]
-    
-    def risk_summary(self):
-        TerminalReturn = self.value[:,-1]/self.value[0,0]-1 #Assumes that all paths have same start point!
-        TerminalLoss = - TerminalReturn
-        VaR95 = np.quantile(TerminalLoss, 0.95)
-        mask = TerminalLoss >= VaR95
-        return {'VaR95' : VaR95, 'CVaR95' : np.mean(TerminalLoss[mask])}
 
 class SensitivitySDEAnalysisTool():
     """
@@ -278,22 +285,58 @@ class SensitivitySDEAnalysisTool():
         summaryNew = MonteCarloSummary(time,value)
         return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()
     
-    def two_param_heatmap(self, t : float, x : np.ndarray, paramsarr : np.ndarray, nsteps : float, size : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,)!
-        res = np.zeros((2*size,2*size))
-        for i in range(2*size):
-            for j in range(2*size):
-                3
+    def two_param_heatmap(self, t : float, x : float, h :int , paramsarr : np.ndarray, idx1 : str, idx2 : str , nsteps : int, step_percent : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,) and small grid size!
+
+        def compute_cell(i,j):
+            n_params = paramsarr.copy()
+            n_params[idx1] = (1+i*step_percent/100)*paramsarr[idx1]
+            n_params[idx2] = (1+j*step_percent/100)*paramsarr[idx2] 
+            time, value = self.SolModel.simulate(t,x,h,n_params)
+            summary = MonteCarloSummary(time,value)
+            d = summary.time_series_summary()[value_rep]
+            if d is not np.ndarray:
+                if d is np.nan:
+                    raise ValueError('Value for a cell of the heatmap could not be calculated. Possibly because of a bad starting value.')
+                return i, j, d
+            else:
+                return i, j, d[-1]
+
+        result = Parallel(n_jobs=-1)(delayed(compute_cell)(i,j) 
+                                     for i in range(-nsteps, nsteps+1) 
+                                     for j in range(-nsteps, nsteps+1)
+                                     )
+        
+        res = np.zeros((nsteps*2+1,nsteps*2+1), dtype=float)
+
+        for i, j, val in result:
+            res[i+nsteps,j+nsteps] = val
+
+
+        if param_rep == 'Absolute':
+            return res
+        elif param_rep == 'Percent':
+            return (res - res[nsteps,nsteps])/res[nsteps,nsteps]*100
+        else:
+            raise ValueError('No acceptable value for param_rep was given.')
 
 def f(t,x,r):
     return r[0]
 
 def g(t,x,r):
     return r[1]
-
+fig, ax = plt.subplots()
+fig2, ax2 = plt.subplots()
 sde = SDEModel(f,g)
-sim = EulerMaruyamaMonteCarlo(sde, 0.1, 200)
+sim = EulerMaruyamaMonteCarlo(sde, 0.01, 100)
 time, value = sim.simulate(0,0,100,np.array([0,1]))
 summary = MonteCarloSummary(time,value)
+tool = SensitivitySDEAnalysisTool(sim,0.0,0)
+x=50
+d=1
 for i in range(100):
-    plt.plot(time,value[i,:])
+    ax.plot(time, value[i,:],'k')
+res = tool.two_param_heatmap(0,2,1000,np.array([0.3,0.1]),0,1,x,d,'VaR95','Percent')
+im = ax2.imshow(res,extent=[-x*d, x*d,
+                        -x*d, x*d], cmap='hot')
+fig2.colorbar(im, ax=ax2, label="StandardDeviation (%)")
 plt.show()

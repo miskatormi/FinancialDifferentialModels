@@ -154,7 +154,8 @@ class EulerMaruyamaMonteCarlo:
         else:
             return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def simulate(self, t : float, x : np.ndarray, paramsarr : np.ndarray = None):
+    def simulate(self, t : float, x0 : float, npaths: int, paramsarr : np.ndarray = None):
+        x = np.full(npaths,x0)
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))
@@ -163,6 +164,11 @@ class EulerMaruyamaMonteCarlo:
         if paramsarr is None:
             for i in range(1,self.nsteps+1):
                 value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1])
+                time[i] = t + i*self.tstep
+        elif paramsarr.ndim == 1:
+            correct_p = paramsarr[:,np.newaxis]*np.ones((1,self.nsteps+1))
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], correct_p[:,i-1])
                 time[i] = t + i*self.tstep
         else:
             for i in range(1,self.nsteps+1):
@@ -272,4 +278,22 @@ class SensitivitySDEAnalysisTool():
         summaryNew = MonteCarloSummary(time,value)
         return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()
     
-    #def two_param_heatmap(self, t : float, x : np.ndarray, paramsarr : np.ndarray, min : float, max : float): # Assumes that paramsarr shape is (2,1)!
+    def two_param_heatmap(self, t : float, x : np.ndarray, paramsarr : np.ndarray, nsteps : float, size : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,)!
+        res = np.zeros((2*size,2*size))
+        for i in range(2*size):
+            for j in range(2*size):
+                3
+
+def f(t,x,r):
+    return r[0]
+
+def g(t,x,r):
+    return r[1]
+
+sde = SDEModel(f,g)
+sim = EulerMaruyamaMonteCarlo(sde, 0.1, 200)
+time, value = sim.simulate(0,0,100,np.array([0,1]))
+summary = MonteCarloSummary(time,value)
+for i in range(100):
+    plt.plot(time,value[i,:])
+plt.show()

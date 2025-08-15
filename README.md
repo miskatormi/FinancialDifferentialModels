@@ -4,7 +4,7 @@ Numerical simulation of deterministic and stochastic financial models using 4th 
 This repository showcases my interest in financial modeling, data analysis, programming, and mathematics. While studying physics, I developed a strong fascination with the mathematical and computational aspects of financial markets. This project represents a selection of my personal work exploring such models.
 ## Core Solver
 ### Features
-**ODE simulation:**
+#### ODE simulation
 
 **`ODEModel`** : 
 
@@ -18,7 +18,7 @@ So the class saves the function $f$ and assumes the ODE is in the above form.
 
 Implements the Runge-Kutta 4 algorithm to solve the given ODEModel for a specific number of time steps of specific size.
 
-**SDE simulation** : 
+#### SDE simulation
 
 **`SDEModel`** :
 
@@ -30,6 +30,12 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 
 Simulates a given number of paths of the stochastic process form a given starting point using the Euler-Maruyama method.
 
+#### Monte Carlo summary
+
+
+
+#### Possible uses
+- 
 
 ### Analysis tools
 #### Sensitivity analysis

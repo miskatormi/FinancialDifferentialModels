@@ -1,9 +1,10 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 class ODEModel:
     """
 
-    A class modelling an Ordinary Differential Equation of the form D_t(x)=RHS(t, x, params=...).
+    A class modelling an Ordinary Differential Equation of the form D_t(x)=RHS(t, x, params=...). Note here that RHS and x must have same shape!
 
     ********
 
@@ -52,22 +53,34 @@ class RK4Solve:
         self.tstep = float(h)
         self.nsteps = int(n)
     
-    def next_step(self,t: float ,  x : np.ndarray, params : np.ndarray): # Returns reliable results for nicely behaving parameters.
-        k1 = self.tstep*self.eq.RHS(t, x, params)
-        k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
-        k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
-        k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
+    def next_step(self,t: float ,  x : np.ndarray, params : np.ndarray = None): # Returns reliable results for nicely behaving parameters.
+        if params is None:
+            k1 = self.tstep*self.eq.RHS(t, x)
+            k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2)
+            k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2)
+            k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3)
+        else:
+            k1 = self.tstep*self.eq.RHS(t, x, params)
+            k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
+            k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
+            k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
-    def solve(self, t : float,x : np.ndarray, paramsarr : np.ndarray):
+    def solve(self, t : float,x : np.ndarray, paramsarr : np.ndarray = None): # Note shape of paramsarr-array!
+        x = np.atleast_1d(x).astype(float)
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))
         value[:,0] = x
         time[0] = t
-        for i in range(1,self.nsteps+1):
-            value[:,i] = self.next_step(time[i-1], value[:,i-1], paramsarr[:,i-1])
-            time[i] = t + i*self.tstep
+        if paramsarr is None:
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step(time[i-1], value[:,i-1])
+                time[i] = t + i*self.tstep
+        else:
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step(time[i-1], value[:,i-1], paramsarr[:,i-1])
+                time[i] = t + i*self.tstep
         return time, value
         
 
@@ -134,19 +147,27 @@ class EulerMaruyamaMonteCarlo:
         self.tstep = float(h)
         self.nsteps = int(n)
     
-    def next_step_monte_carlo(self, t : float, x : np.ndarray, params : np.ndarray):
+    def next_step_monte_carlo(self, t : float, x : np.ndarray, params : np.ndarray = None):
         dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
-        return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
+        if params is None:
+            return x + self.model.func_dt(t,x)*self.tstep + self.model.func_dW(t,x)*dW_t
+        else:
+            return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def simulate(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
+    def simulate(self, t : float, x : np.ndarray, paramsarr : np.ndarray = None):
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
         value = np.zeros((n1x,self.nsteps+1))
         value[:,0] = x
         time[0] = t
-        for i in range(1,self.nsteps+1):
-            value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], paramsarr[:,i-1])
-            time[i] = t + i*self.tstep
+        if paramsarr is None:
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1])
+                time[i] = t + i*self.tstep
+        else:
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], paramsarr[:,i-1])
+                time[i] = t + i*self.tstep
         return time, value
     
 
@@ -250,3 +271,26 @@ class SensitivitySDEAnalysisTool():
         time, value = self.SolModel.simulate(t,x,new_params)
         summaryNew = MonteCarloSummary(time,value)
         return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()
+    
+    #def two_param_heatmap(self, t : float, x : np.ndarray, paramsarr : np.ndarray, min : float, max : float): # Assumes that paramsarr shape is (2,1)!
+
+def f(t,x):
+    return t*2
+
+def g(t,x):
+    return t
+
+basic = SDEModel(f,g)
+solver = EulerMaruyamaMonteCarlo(basic, 0.01, 100)
+time, value = solver.simulate(0,np.full(100,0))
+summary = MonteCarloSummary(time, value)
+a = summary.time_series_summary()
+print(summary.time_series_summary())
+for i in range(100):
+    plt.plot(time,value[i,:], 'k')
+
+plt.plot(a['time'],a['StandardDeviation'])
+plt.plot(a['time'],a['Mean'])
+plt.plot(a['time'],a['Max'])
+
+plt.show()

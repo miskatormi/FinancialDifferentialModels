@@ -156,6 +156,7 @@ class EulerMaruyamaMonteCarlo:
             return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
     def simulate(self, t : float, x0 : float, npaths: int, paramsarr : np.ndarray = None):
+        
         x = np.full(npaths,x0)
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
@@ -294,22 +295,19 @@ class SensitivitySDEAnalysisTool():
             time, value = self.SolModel.simulate(t,x,h,n_params)
             summary = MonteCarloSummary(time,value)
             d = summary.time_series_summary()[value_rep]
-            if d is not np.ndarray:
-                if d is np.nan:
+            if np.isscalar(d):
+                if np.isnan(d):
                     raise ValueError('Value for a cell of the heatmap could not be calculated. Possibly because of a bad starting value.')
-                return i, j, d
+                return d
             else:
-                return i, j, d[-1]
+                return d[-1]
 
-        result = Parallel(n_jobs=-1)(delayed(compute_cell)(i,j) 
-                                     for i in range(-nsteps, nsteps+1) 
-                                     for j in range(-nsteps, nsteps+1)
-                                     )
         
         res = np.zeros((nsteps*2+1,nsteps*2+1), dtype=float)
 
-        for i, j, val in result:
-            res[i+nsteps,j+nsteps] = val
+        for i in range(-nsteps,nsteps+1):
+            for j in range(-nsteps,nsteps+1):
+                res[i+nsteps,j+nsteps] = compute_cell(i,j)
 
 
         if param_rep == 'Absolute':
@@ -318,25 +316,3 @@ class SensitivitySDEAnalysisTool():
             return (res - res[nsteps,nsteps])/res[nsteps,nsteps]*100
         else:
             raise ValueError('No acceptable value for param_rep was given.')
-
-def f(t,x,r):
-    return r[0]
-
-def g(t,x,r):
-    return r[1]
-fig, ax = plt.subplots()
-fig2, ax2 = plt.subplots()
-sde = SDEModel(f,g)
-sim = EulerMaruyamaMonteCarlo(sde, 0.01, 100)
-time, value = sim.simulate(0,0,100,np.array([0,1]))
-summary = MonteCarloSummary(time,value)
-tool = SensitivitySDEAnalysisTool(sim,0.0,0)
-x=50
-d=1
-for i in range(100):
-    ax.plot(time, value[i,:],'k')
-res = tool.two_param_heatmap(0,2,1000,np.array([0.3,0.1]),0,1,x,d,'VaR95','Percent')
-im = ax2.imshow(res,extent=[-x*d, x*d,
-                        -x*d, x*d], cmap='hot')
-fig2.colorbar(im, ax=ax2, label="StandardDeviation (%)")
-plt.show()

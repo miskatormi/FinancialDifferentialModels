@@ -10,7 +10,7 @@ This repository showcases my interest in financial modeling, data analysis, prog
 
 Encapsulates the deterministic ODE model by saving the right hand side of the ODE, that should be in the form 
 
-$$\vec{\dot x}=\vec f(t,x,params)$$
+$$\vec{\dot x}=\vec f(t,x,\text{params})$$
 
 So the class saves the function $f$ and assumes the ODE is in the above form.
 
@@ -22,11 +22,13 @@ Implements the Runge-Kutta 4 algorithm to solve the given ODEModel for a specifi
 
 **`SDEModel`** :
 
-Saves drift and diffusion terms of a SDE model.
+Saves drift and diffusion terms of a SDE model. Specifically it saves the functions a,b from the stochastic process:
+
+$$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 
 **`EulerMaruyamaMonteCarlo`** :
 
-Simulates a given number of paths of the stochastic process form a given starting point.
+Simulates a given number of paths of the stochastic process form a given starting point using the Euler-Maruyama alogrithm.
 
 
 ### Analysis tools

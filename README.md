@@ -28,7 +28,7 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 
 **`EulerMaruyamaMonteCarlo`** :
 
-Simulates a given number of paths of the stochastic process form a given starting point using the Euler-Maruyama alogrithm.
+Simulates a given number of paths of the stochastic process form a given starting point using the Euler-Maruyama method.
 
 
 ### Analysis tools

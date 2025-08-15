@@ -273,24 +273,3 @@ class SensitivitySDEAnalysisTool():
         return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()
     
     #def two_param_heatmap(self, t : float, x : np.ndarray, paramsarr : np.ndarray, min : float, max : float): # Assumes that paramsarr shape is (2,1)!
-
-def f(t,x):
-    return t*2
-
-def g(t,x):
-    return t
-
-basic = SDEModel(f,g)
-solver = EulerMaruyamaMonteCarlo(basic, 0.01, 100)
-time, value = solver.simulate(0,np.full(100,0))
-summary = MonteCarloSummary(time, value)
-a = summary.time_series_summary()
-print(summary.time_series_summary())
-for i in range(100):
-    plt.plot(time,value[i,:], 'k')
-
-plt.plot(a['time'],a['StandardDeviation'])
-plt.plot(a['time'],a['Mean'])
-plt.plot(a['time'],a['Max'])
-
-plt.show()

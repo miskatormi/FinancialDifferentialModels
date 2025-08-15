@@ -52,7 +52,7 @@ class RK4Solve:
         self.tstep = float(h)
         self.nsteps = int(n)
     
-    def next_step(self,t: float ,  x : np.ndarray, params : np.ndarray):
+    def next_step(self,t: float ,  x : np.ndarray, params : np.ndarray): # Returns reliable results for nicely behaving parameters.
         k1 = self.tstep*self.eq.RHS(t, x, params)
         k2 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k1/2, params)
         k3 = self.tstep*self.eq.RHS(t + self.tstep/2, x + k2/2, params)
@@ -203,4 +203,50 @@ class MonteCarloSummary:
         VaR95 = np.quantile(TerminalLoss, 0.95)
         mask = TerminalLoss >= VaR95
         return {'VaR95' : VaR95, 'CVaR95' : np.mean(TerminalLoss[mask])}
- 
+
+class SensitivitySDEAnalysisTool():
+    """
+    
+    A class that models a simple sensitivity analysis tool.
+
+    ********
+
+    Parameters:
+
+    SModel : EulerMaruyamaMonteCarlo
+    The solver of the SDE we are inspecting
+
+    percentage : float
+    How much you want to add to the paramater
+
+    paramspecifier : int
+    Which parameter you want to change
+
+    ********
+
+    Methods:
+
+    tell_new_result(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[np.ndarray, np.ndarray]
+    Returns the result of the simulation using the new parameters.
+
+    tell_new_result_summaries(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[dict, np.ndarray, dict]
+    Returns all possible statistics using the MonteCarloSummary class of the new simulated values.
+    
+    
+    """
+    def __init__(self, SModel : EulerMaruyamaMonteCarlo, percentage : float, paramspecifier : int):
+        self.SolModel = SModel
+        self.coeff = percentage/100+1
+        self.param = int(paramspecifier)
+
+    def tell_new_result(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
+        new_params = paramsarr.copy()
+        new_params[self.param] *= self.coeff
+        return self.SolModel.simulate(t,x,new_params)
+    
+    def tell_new_result_summaries(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
+        new_params = paramsarr.copy()
+        new_params[self.param] *= self.coeff
+        time, value = self.SolModel.simulate(t,x,new_params)
+        summaryNew = MonteCarloSummary(time,value)
+        return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()

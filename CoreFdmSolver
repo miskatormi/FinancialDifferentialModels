@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import warnings
 
 class ODEModel:
@@ -354,3 +355,62 @@ class SensitivitySDEAnalysisTool():
             return (res - res[nsteps,nsteps])/res[nsteps,nsteps]*100
         else:
             raise ValueError('No acceptable value for param_rep was given.')
+
+class Calibrator():
+    """
+
+    A Calibrator to calibrate GBM and Vasicek SDE models.
+
+    ********
+
+    Parameters:
+
+    time_interval : float
+    Tells the time interval between datapoints.
+
+    Methods:
+
+    gbm_calibrate(data : pd.Series) -> np.ndarray
+    Takes in data and returns suitable drift (m) and diffusion (sigma) coefficients for geometric brownian
+    motion in a np.ndarray np.array([m,sigma]). The method calculates these using the log-returns.
+
+    vasicek_calibrate(data : pd.Series) -> np.ndarray
+    Takes in data and returns suitable speed of mean reversion (k), long-run mean (t) and diffusion (s) coefficients
+    for the Vasicek SDE model in a np.ndarray  np.array([k,t,s]). It uses least-squares method to determine the relationship
+    between the shifted data and the data i.e the coefficients k ,t (fitting : data_{i+1}=c+d*data_i+residue_i). However s is determined
+    from the residues of each datapoint.
+
+    """
+
+    def __init__(self, time_interval : float):
+        if time_interval <= 0:
+            raise ValueError('Time interval cannot be zero or negative!')
+        self.tint = float(time_interval)
+
+    def gbm_calibrate(self, data : pd.Series):
+        if len(data.dropna()) < 3 : 
+            raise ValueError('Dataset too short.')
+        data_n=np.asarray(data.dropna())
+        if np.any(data_n <= 0):
+            raise ValueError('A data value was negative or zero.')
+        log_dat = np.log(data_n[1:]/data_n[:-1])
+        sigma = np.sqrt(log_dat.var()/self.tint)
+        mu = log_dat.mean() / self.tint + 0.5*sigma**2
+        return np.array([ mu, sigma])
+    
+    def vasicek_calibrate(self, data : pd.Series):
+        if len(data.dropna()) < 3 : 
+            raise ValueError('Dataset too short.')
+        data_n = np.asarray(data.dropna(), dtype=float)
+        final_data = data_n[:-1]
+        shifted_final_data = data_n[1:]
+        c, d =np.linalg.lstsq(np.column_stack([np.ones_like(final_data),final_data]), shifted_final_data, rcond=None)[0]
+        if d < 1e-6 or d > 0.999:
+            warnings.warn('Nearly unsuitable coefficient, clipping may be done.')
+        d_safe = float(np.clip(d,1e-8,1-1e-8))
+        eps = shifted_final_data - c - d_safe * final_data
+        k = -np.log(d_safe)/self.tint
+        t = c/(1-d_safe)
+        s = np.sqrt(2*k*np.mean(eps**2)/(1-d_safe**2))
+        return np.array([k, t, s] ,dtype=float)
+

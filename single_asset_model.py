@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from core_lib.core_fdm import ODEModel,RK4Solve
 
-# Time-varying rate:
+# Time-varying rate, an asset with seasonality in its growth rate:
 base_growth = 0.05
 oscillatory_growth_amplitude = 0.07
 period_of_oscillation = 1

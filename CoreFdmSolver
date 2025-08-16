@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import warnings
 
 class ODEModel:
     """
@@ -66,7 +66,7 @@ class RK4Solve:
             k4 = self.tstep*self.eq.RHS(t + self.tstep, x + k3, params)
         return x + (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     
-    def solve(self, t : float,x : np.ndarray, paramsarr : np.ndarray = None): # Note shape of paramsarr-array!
+    def solve(self, t : float, x : np.ndarray, paramsarr : np.ndarray = None): 
         x = np.atleast_1d(x).astype(float)
         n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
@@ -76,6 +76,11 @@ class RK4Solve:
         if paramsarr is None:
             for i in range(1,self.nsteps+1):
                 value[:,i] = self.next_step(time[i-1], value[:,i-1])
+                time[i] = t + i*self.tstep
+        elif paramsarr.ndim == 1:
+            correct_p = paramsarr[:,np.newaxis]*np.ones((1,self.nsteps+1))
+            for i in range(1,self.nsteps+1):
+                value[:,i] = self.next_step(time[i-1], value[:,i-1], correct_p[:,i-1])
                 time[i] = t + i*self.tstep
         else:
             for i in range(1,self.nsteps+1):
@@ -137,43 +142,51 @@ class EulerMaruyamaMonteCarlo:
     and the parameters array params and return vector of the same shape as x but after
     time self.tstep, each component is a different path of the stochastic process.
 
-    simulate(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[np.ndarray,np.ndarray (with shape: (paths, n_steps+1))] : 
-    Gives all the steps of all paths in the array x and additionally returns the corresponding times t. (paramsarr.shape == (param_dim, n_steps))
+    simulate(t : float, x0 : float, npaths : int , paramsarr : np.ndarray) -> Tuple[np.ndarray,np.ndarray (with shape: (paths, n_steps+1))] : 
+    Gives all the steps from intial value x and inital time t of the npaths number of different paths
+    and additionally returns the corresponding times t. (paramsarr.shape == (param_dim, n_steps))
 
     """
 
-    def __init__(self, Model : SDEModel, h : float, n : int):
+    def __init__(self, Model : SDEModel, time_step_size : float, number_of_time_steps : int):
         self.model = Model
-        self.tstep = float(h)
-        self.nsteps = int(n)
+        self.tstep = float(time_step_size)
+        self.nsteps = int(number_of_time_steps)
     
-    def next_step_monte_carlo(self, t : float, x : np.ndarray, params : np.ndarray = None):
-        dW_t = np.random.normal(0, np.sqrt(self.tstep), np.shape(x))
+    def next_step_monte_carlo(self, t : float, x : np.ndarray, rn : np.random.Generator, params : np.ndarray = None):
+        dW_t = rn.normal(0, np.sqrt(self.tstep), np.shape(x))
         if params is None:
             return x + self.model.func_dt(t,x)*self.tstep + self.model.func_dW(t,x)*dW_t
         else:
             return x + self.model.func_dt(t,x, params)*self.tstep + self.model.func_dW(t,x, params)*dW_t
     
-    def simulate(self, t : float, x0 : float, npaths: int, paramsarr : np.ndarray = None):
-        
+    def simulate(self, t : float, x0 : float, npaths: int, paramsarr : np.ndarray = None, rng = None):
+        if rng is None:
+            rn = np.random.default_rng()
+        elif isinstance(rng, int):
+            rn = np.random.default_rng(rng)
+        elif isinstance(rng, np.random.Generator):
+            rn = rng
+        else:
+            raise ValueError("rng must be None, int, or np.random.Generator")
+
         x = np.full(npaths,x0)
-        n1x = np.shape(x)[0]
         time = np.zeros(self.nsteps+1)
-        value = np.zeros((n1x,self.nsteps+1))
+        value = np.zeros((np.shape(x)[0],self.nsteps+1))
         value[:,0] = x
         time[0] = t
         if paramsarr is None:
             for i in range(1,self.nsteps+1):
-                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1])
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1],rn)
                 time[i] = t + i*self.tstep
         elif paramsarr.ndim == 1:
             correct_p = paramsarr[:,np.newaxis]*np.ones((1,self.nsteps+1))
             for i in range(1,self.nsteps+1):
-                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], correct_p[:,i-1])
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], correct_p[:,i-1],rn)
                 time[i] = t + i*self.tstep
         else:
             for i in range(1,self.nsteps+1):
-                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], paramsarr[:,i-1])
+                value[:,i] = self.next_step_monte_carlo(time[i-1], value[:,i-1], paramsarr[:,i-1],rn=rn)
                 time[i] = t + i*self.tstep
         return time, value
     
@@ -199,14 +212,10 @@ class MonteCarloSummary:
     Methods:
 
     time_series_summary() -> dict
-    Calculates most statistics for each time step of the different paths.
+    Calculates most statistics for each time step of the different paths. Also returns VaR95, CVaR95 statistics.
 
     terminal_value() -> np.ndarray
-    Returns the last column vector, practically giving the distribution of the random variable that we want to solve
-
-    risk_summary -> dict
-    Returns values of VaR95, CVaR95
-
+    Terminal values across paths. 
     """
 
     def __init__(self, times : np.ndarray, value : np.ndarray):
@@ -217,9 +226,9 @@ class MonteCarloSummary:
         if self.value[0,0] == 0:
             VaR95 = np.nan
             CVaR95 = np.nan
-            print('Starting value cannot be zero for some statistics')
+            warnings.warn('Starting value cannot be zero, VaR95/CVaR95 undefined')
         else:
-            TerminalReturn = self.value[:,-1]/self.value[0,0]-1 #Assumes that all paths have same start point!
+            TerminalReturn = self.value[:,-1]/self.value[0,0]-1
             TerminalLoss = - TerminalReturn
             VaR95 = np.quantile(TerminalLoss, 0.95)
             mask = TerminalLoss >= VaR95
@@ -260,12 +269,25 @@ class SensitivitySDEAnalysisTool():
 
     Methods:
 
-    tell_new_result(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[np.ndarray, np.ndarray]
-    Returns the result of the simulation using the new parameters.
+    tell_new_result(t : float, x : float, npaths : int, paramsarr : np.ndarray) -> Tuple[np.ndarray, np.ndarray]
+    Returns the result of the simulation using the new parameters. t,x are the starting time and value. 
+    npaths is the number of paths of the stochastic process that we want to calculate. paramsarr is the
+    array which contains the parameters.
 
-    tell_new_result_summaries(t : float, x : np.ndarray, paramsarr : np.ndarray) -> Tuple[dict, np.ndarray, dict]
-    Returns all possible statistics using the MonteCarloSummary class of the new simulated values.
+    tell_new_result_summaries(t : float, x : float, npaths : int , paramsarr : np.ndarray) -> Tuple[dict, np.ndarray, dict]
+    Returns all possible statistics using the MonteCarloSummary class of the new simulated values.t,x are the starting time and value. 
+    npaths is the number of paths of the stochastic process that we want to calculate. paramsarr is the array which contains the parameters.
+
+    two_param_heatmap(t : float, x : float, npaths : int, paramsarr : np.ndarray, idx1 : int, idx2 : int, nsteps : int, step_percent : float, value_rep : str, param_rep : str) -> np.ndarray
+    Returns a np.ndarray of shape (2*nsteps+1,2*nsteps+1) where each value depicts a pixel and its intensity. In each cell the asked value_rep is
+    simulated with differently perturbed parameters 1 and 2. These parameters are in the parameter array:
     
+    parameter 1 = paramsarr[idx1]
+    parameter 2 = paramsarr[idx2]
+
+    idx1, idx2 determine which two parameters are perturbed. The perturbation is done so that in the center cell the parameters are not changed.
+    and when moving away from the center cell the parameters are perturbed always by step_percent.
+
     
     """
     def __init__(self, SModel : EulerMaruyamaMonteCarlo, percentage : float, paramspecifier : int):
@@ -273,27 +295,30 @@ class SensitivitySDEAnalysisTool():
         self.coeff = percentage/100+1
         self.param = int(paramspecifier)
 
-    def tell_new_result(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
+    def tell_new_result(self, t : float, x : float, npaths : int , paramsarr : np.ndarray):
         new_params = paramsarr.copy()
         new_params[self.param] *= self.coeff
-        return self.SolModel.simulate(t,x,new_params)
+        return self.SolModel.simulate(t,x,npaths,new_params)
     
-    def tell_new_result_summaries(self, t : float, x : np.ndarray, paramsarr : np.ndarray):
+    def tell_new_result_summaries(self, t : float, x : float, npaths : int, paramsarr : np.ndarray):
         new_params = paramsarr.copy()
         new_params[self.param] *= self.coeff
-        time, value = self.SolModel.simulate(t,x,new_params)
+        time, value = self.SolModel.simulate(t,x,npaths,new_params)
         summaryNew = MonteCarloSummary(time,value)
-        return summaryNew.risk_summary(), summaryNew.terminal_value(), summaryNew.time_series_summary()
+        return summaryNew.terminal_value(), summaryNew.time_series_summary()
     
-    def two_param_heatmap(self, t : float, x : float, h :int , paramsarr : np.ndarray, idx1 : str, idx2 : str , nsteps : int, step_percent : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,) and small grid size!
+    def two_param_heatmap(self, t : float, x : float, npaths :int , paramsarr : np.ndarray, idx1 : int, idx2 : int , nsteps : int, step_percent : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,) and small grid size!
+
 
         def compute_cell(i,j):
             n_params = paramsarr.copy()
             n_params[idx1] = (1+i*step_percent/100)*paramsarr[idx1]
             n_params[idx2] = (1+j*step_percent/100)*paramsarr[idx2] 
-            time, value = self.SolModel.simulate(t,x,h,n_params)
-            summary = MonteCarloSummary(time,value)
-            d = summary.time_series_summary()[value_rep]
+            time, value = self.SolModel.simulate(t,x,npaths,n_params)
+            ts = MonteCarloSummary(time,value).time_series_summary()
+            if value_rep not in ts:
+                raise ValueError('Invalid value for value_rep.')
+            d = ts[value_rep]
             if np.isscalar(d):
                 if np.isnan(d):
                     raise ValueError('Value for a cell of the heatmap could not be calculated. Possibly because of a bad starting value.')
@@ -312,6 +337,8 @@ class SensitivitySDEAnalysisTool():
         if param_rep == 'Absolute':
             return res
         elif param_rep == 'Percent':
+            if res[nsteps,nsteps]==0:
+                raise ValueError('The base value was zero, preventing zero division')
             return (res - res[nsteps,nsteps])/res[nsteps,nsteps]*100
         else:
             raise ValueError('No acceptable value for param_rep was given.')

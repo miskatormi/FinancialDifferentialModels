@@ -41,21 +41,21 @@ Simulates a given number of paths of the stochastic process form a given startin
 #### Sensitivity analysis
 #### Monte Carlo summary
 
+## Examples of using Core Solver for different financial models
+### Deterministic Models
+#### Single Asset Model
+#### Multi Asset Model
+#### Feedback Rate Growth Models
+##### Diminishing returns
+##### Cost-of-debt Feedback
+### Stochastic Models (Monte Carlo simulations)
+#### Geometric Brownian Motion, GBM
+##### Constant drift and volatility
+##### Time Dependent drift and volatility
+#### Vasicek SDE
+#### DCF with Vasicek
 
-## Deterministic Models
-### Single Asset Model
-### Multi Asset Model
-### Feedback Rate Growth Models
-#### Diminishing returns
-#### Cost-of-debt Feedback
-## Stochastic Models (Monte Carlo simulations)
-### Geometric Brownian Motion, GBM
-#### Constant drift and volatility
-#### Time Dependent drift and volatility
-### Vasicek SDE
-### DCF with Vasicek
-
-## Data-driven simulations
-### Estimation of drift and volatility for GBM from market price data
-### Estimation of long-run mean & volatility for Vasicek interest rate models
-### Calibration from historical datasets to make forward-looking simulations
+### Data-driven simulations
+#### Estimation of drift and volatility for GBM from market price data
+#### Estimation of long-run mean & volatility for Vasicek interest rate models
+#### Calibration from historical datasets to make forward-looking simulations

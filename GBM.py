@@ -6,5 +6,11 @@ from core_lib.core_fdm import SDEModel, EulerMaruyamaMonteCarlo, MonteCarloSumma
 
 # A weekly simple forecast with Geometric Brownian Motion for AAPL
 
-data = pd.read_csv('FinancialDEModels\AAPL_6M.csv')
-print(data)
+data_inv = pd.read_csv('AAPL_6M.csv').iloc[:,1]
+
+data = data_inv.iloc[::-1]
+
+
+GBM_cal = Calibrator(1)
+parameters = GBM_cal.gbm_calibrate(data)
+print(parameters)

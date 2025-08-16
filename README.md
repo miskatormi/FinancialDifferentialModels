@@ -55,7 +55,7 @@ Simulates a given number of paths of the stochastic process form a given startin
 #### Vasicek SDE
 #### DCF with Vasicek
 
-### Data-driven simulations
+### Data-driven simulations using the Calibrator class
 #### Estimation of drift and volatility for GBM from market price data
 #### Estimation of long-run mean & volatility for Vasicek interest rate models
 #### Calibration from historical datasets to make forward-looking simulations

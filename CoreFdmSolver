@@ -278,7 +278,7 @@ class SensitivitySDEAnalysisTool():
     Returns all possible statistics using the MonteCarloSummary class of the new simulated values.t,x are the starting time and value. 
     npaths is the number of paths of the stochastic process that we want to calculate. paramsarr is the array which contains the parameters.
 
-    two_param_heatmap(t : float, x : float, npaths : int, paramsarr : np.ndarray, idx1 : int, idx2 : int, nsteps : int, step_percent : float, value_rep : str, param_rep : str) -> np.ndarray
+    two_param_heatmap(t : float, x : float, npaths : int, paramsarr : np.ndarray, idx1 : int, idx2 : int, nsteps : int, step_percent : float, value_rep : str, param_rep : str, rng = None) -> np.ndarray
     Returns a np.ndarray of shape (2*nsteps+1,2*nsteps+1) where each value depicts a pixel and its intensity. In each cell the asked value_rep is
     simulated with differently perturbed parameters 1 and 2. These parameters are in the parameter array:
     
@@ -307,14 +307,19 @@ class SensitivitySDEAnalysisTool():
         summaryNew = MonteCarloSummary(time,value)
         return summaryNew.terminal_value(), summaryNew.time_series_summary()
     
-    def two_param_heatmap(self, t : float, x : float, npaths :int , paramsarr : np.ndarray, idx1 : int, idx2 : int , nsteps : int, step_percent : float, value_rep : str, param_rep : str): # Assumes that paramsarr shape is (2,) and small grid size!
-
+    def two_param_heatmap(self, t : float, x : float, npaths :int , paramsarr : np.ndarray, idx1 : int, idx2 : int , nsteps : int, step_percent : float, value_rep : str, param_rep : str, rng = None): # Assumes that paramsarr shape is (2,) and small grid size!
+        if rng is None:
+            rn = None
+        elif isinstance(rng, (int,np.float64)):
+            rn = np.random.default_rng(rng)
+        elif isinstance(rng, np.random.Generator):
+            rn = rng
 
         def compute_cell(i,j):
             n_params = paramsarr.copy()
             n_params[idx1] = (1+i*step_percent/100)*paramsarr[idx1]
             n_params[idx2] = (1+j*step_percent/100)*paramsarr[idx2] 
-            time, value = self.SolModel.simulate(t,x,npaths,n_params)
+            time, value = self.SolModel.simulate(t,x,npaths,n_params, rng=rn)
             ts = MonteCarloSummary(time,value).time_series_summary()
             if value_rep not in ts:
                 raise ValueError('Invalid value for value_rep.')

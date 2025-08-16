@@ -6,4 +6,5 @@ from core_lib.core_fdm import SDEModel, EulerMaruyamaMonteCarlo, MonteCarloSumma
 
 # A weekly simple forecast with Geometric Brownian Motion for AAPL
 
-pd.read_csv('FinancialDEModels\AAPL_6M.csv', )
+data = pd.read_csv('FinancialDEModels\AAPL_6M.csv')
+print(data)

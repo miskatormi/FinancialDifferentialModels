@@ -1,4 +1,4 @@
-# FinancialDEModels
+# FinancialDifferentialModels
 Numerical simulation of deterministic and stochastic financial models using 4th order Runge-Kutta, Euler-Maruyama and Monte Carlo methods.
 ## Motivation
 This repository showcases my interest in financial modeling, data analysis, programming, and mathematics. While studying physics, I developed a strong fascination with the mathematical and computational aspects of financial markets. This project represents a selection of my personal work exploring such models.

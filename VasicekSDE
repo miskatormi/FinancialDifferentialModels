@@ -4,7 +4,33 @@ import numpy as np
 import pandas as pd
 from core_lib.core_fdm import SDEModel, EulerMaruyamaMonteCarlo, MonteCarloSummary, SensitivitySDEAnalysisTool, Calibrator
 
+# A simple risk forecast using the Vasicek SDE model of interest rates for FEDFUNDS https://fred.stlouisfed.org/series/FEDFUNDS
+
 data = pd.read_csv('FEDFUNDS.csv')
-calibrator_data = data.loc[:'2005-01-01'][1]
+calibrator_data = data.loc[:'2005-01-01']['FEDFUNDS']
 calibrator = Calibrator(1) 
 parameters  = calibrator.vasicek_calibrate(calibrator_data)
+
+Vasicek = SDEModel(lambda t,x,p : p[0]*(p[1]-x), lambda t,x,p : p[2])
+simulator = EulerMaruyamaMonteCarlo(Vasicek, 1, 652)
+time, values = simulator.simulate(0, float(calibrator_data.iloc[-1]), 1000, parameters, 30982)
+summarizer = MonteCarloSummary(time, values)
+
+print('VaR95', summarizer.time_series_summary()['VaR95'])
+print('CVaR95', summarizer.time_series_summary()['CVaR95'])
+fig1, ax1 = plt.subplots()
+for i in range(100):
+    if i ==1 :
+        ax1.plot(time,values[i,:],'k', label='Simulated Vasicek paths')
+    else:
+        ax1.plot(time,values[i,:],'k')
+ax1.plot(np.arange(0,652),np.asarray(data.loc['2005-01-01':]['FEDFUNDS']), 'b' , label='Actual FEDFUNDS rates')
+ax1.plot(time, summarizer.time_series_summary()['Mean'], 'g', label='Mean')
+ax1.plot(time, summarizer.time_series_summary()['quantiles'][0.05], 'r', label='0.05 quantile')
+ax1.set_ylabel('Rate (%)')
+ax1.set_xlabel('Time (months)')
+ax1.set_title('FEDFUNDS Vasicek risk forecast from 01/2005 to 01/2025')
+ax1.legend()
+ax1.grid()
+
+plt.show()

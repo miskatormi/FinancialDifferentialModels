@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from core_lib.core_fdm import SDEModel, EulerMaruyamaMonteCarlo, MonteCarloSummary, SensitivitySDEAnalysisTool, Calibrator
 
-# A weekly simple forecast with Geometric Brownian Motion for AAPL
+# A simple forecast with Geometric Brownian Motion for AAPL
 
 data_inv = pd.read_csv('AAPL_250d.csv').iloc[:,1]
 

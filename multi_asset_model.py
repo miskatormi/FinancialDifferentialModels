@@ -4,6 +4,7 @@ import numpy as np
 from core_lib.core_fdm import ODEModel,RK4Solve
 
 # Captial competition, two sectors compete for scarce funding
+# This mostly a showcase of the RK4 solver
 
 a1 = 0.08 # Base growth
 a2 = 0.05 

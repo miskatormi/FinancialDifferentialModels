@@ -4,6 +4,8 @@ import numpy as np
 from core_lib.core_fdm import ODEModel,RK4Solve
 
 # Time-varying rate, an asset with seasonality in its growth rate:
+# This mostly a showcase of the RK4 solver
+
 base_growth = 0.05
 oscillatory_growth_amplitude = 0.07
 period_of_oscillation = 1

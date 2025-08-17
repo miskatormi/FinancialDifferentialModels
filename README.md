@@ -30,32 +30,22 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 
 Simulates a given number of paths of the stochastic process form a given starting point using the Euler-Maruyama method.
 
-#### Monte Carlo summary
+#### Analysis and summary tools
 
+**`MonteCarloSummary`** :
 
+**`SensitivitySDEAnalysisTool`** :
+
+**`Calibrator`** :
 
 #### Possible uses
 - 
-
-### Analysis tools
-#### Sensitivity analysis
-#### Monte Carlo summary
 
 ## Examples of using Core Solver for different financial models
 ### Deterministic Models
 #### Single Asset Model
 #### Multi Asset Model
-#### Feedback Rate Growth Models
-##### Diminishing returns
-##### Cost-of-debt Feedback
 ### Stochastic Models (Monte Carlo simulations)
 #### Geometric Brownian Motion, GBM
-##### Constant drift and volatility
-##### Time Dependent drift and volatility
 #### Vasicek SDE
-#### DCF with Vasicek
 
-### Data-driven simulations using the Calibrator class
-#### Estimation of drift and volatility for GBM from market price data
-#### Estimation of long-run mean & volatility for Vasicek interest rate models
-#### Calibration from historical datasets to make forward-looking simulations

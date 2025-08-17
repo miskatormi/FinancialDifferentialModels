@@ -46,6 +46,6 @@ Simulates a given number of paths of the stochastic process form a given startin
 #### Single Asset Model
 #### Multi Asset Model
 ### Stochastic Models (Monte Carlo simulations)
-#### Geometric Brownian Motion, GBM
-#### Vasicek SDE
+#### Geometric Brownian Motion for AAPL + VaR95 heatmap for perturbed drift and volatility
+#### Vasicek SDE for FEDFUNDS
 

@@ -188,12 +188,7 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 ### Deterministic Models
 #### Single Asset Model
 
-<iframe
-  src="https://https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/single_asset_model.pdf"
-  width="100%"
-  height="600px"
-  style="border: none;">
-</iframe>
+ <iframe src="https://https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/single_asset_model.pdf" width="100%" height="500" frameborder="0"></iframe>
 
 #### Multi Asset Model
 ### Stochastic Models (Monte Carlo simulations)

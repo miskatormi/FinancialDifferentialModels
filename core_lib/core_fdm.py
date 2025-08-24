@@ -125,7 +125,7 @@ class EulerMaruyamaMonteCarlo:
 
     """
 
-    A class that models a simulator to a SDE using the Euler-Maruyama algorithm and the Monte Carlo method.
+    A simulator for a SDE using the Euler-Maruyama algorithm and the Monte Carlo method.
 
     ********
 
@@ -138,7 +138,7 @@ class EulerMaruyamaMonteCarlo:
     Size of the time step
 
     n : int
-    The total number of steps in the simulation
+    The total number of time steps in the simulation
 
     ********
 
@@ -204,7 +204,7 @@ class EulerMaruyamaMonteCarlo:
 class MonteCarloSummary:
     """
     
-    A class meant to model a data structure which has many stochastic walks in some time interval.
+    A class meant to model a data structure which has many stochastic walks in some time interval, to tell statistics of all paths like how the standard deviation developed with respect to time.
 
     ********
 

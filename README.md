@@ -190,12 +190,12 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 
 ![Single](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/single_asset_model.png)
 
-#### Multi Asset Model
+#### Multi Asset Model, **`multi_asset_model.py`**
 
 ![Multi](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/capital_competition.png)
 
 ### Stochastic Models (Monte Carlo simulations)
-#### Geometric Brownian Motion for AAPL + VaR95 heatmap for perturbed drift and volatility to evaluate risk
+#### Geometric Brownian Motion for AAPL + VaR95 heatmap for perturbed drift and volatility to evaluate risk, **`GBM.py`**
 
 Here is the plot of all simulated GBM paths for AAPL spot price. The GBM model was calibrated using real historical data of AAPL prices. In the plot, the calibration period were the days 0-125.
 
@@ -213,7 +213,7 @@ Then a heatmap of the AAPL final VaR95 (calculated from day 125 to day 255) for 
 
 ![Heatmap](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/AAPL_GBM_VaR95_Heatmap_with_parameter_perturbation.png)
 
-#### Vasicek SDE for FEDFUNDS for risk evaluation
+#### Vasicek SDE for FEDFUNDS for risk evaluation, **`VasicekSDE.py`**
 
 This simulation gave the following VaR95 and CVaR95 values:
 

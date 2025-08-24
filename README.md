@@ -187,6 +187,14 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 ## Examples of using the Core Solver
 ### Deterministic Models
 #### Single Asset Model
+
+<iframe
+  src="https://https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/single_asset_model.pdf"
+  width="100%"
+  height="600px"
+  style="border: none;">
+</iframe>
+
 #### Multi Asset Model
 ### Stochastic Models (Monte Carlo simulations)
 #### Geometric Brownian Motion for AAPL + VaR95 heatmap for perturbed drift and volatility to evaluate risk

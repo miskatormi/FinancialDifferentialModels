@@ -219,6 +219,8 @@ Here is the plot of all simulated Vasicek model paths for Fed Funds Rate. This m
 
 ![Vasicek](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/FEDFUNDS_Vasicek_risk.png)
 
+*Vasicek model has the same problem as GBM, it is too simplistic for accurate risk analysis.*
+
 This simulation gave the following VaR95 and CVaR95 values:
 
 VaR95 : 0.4611016895893737

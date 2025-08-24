@@ -215,6 +215,10 @@ Then a heatmap of the AAPL final VaR95 (calculated from day 125 to day 255) for 
 
 #### Vasicek SDE for FEDFUNDS for risk evaluation, **`VasicekSDE.py`**
 
+Here is the plot of all simulated Vasicek model paths for Fed Funds Rate. This model was also calibrated using historical rates.
+
+![Vasicek](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/FEDFUNDS_Vasicek_risk.png)
+
 This simulation gave the following VaR95 and CVaR95 values:
 
 VaR95 : 0.4611016895893737

@@ -227,4 +227,7 @@ VaR95 : 0.4611016895893737
 
 CVaR95 : 0.6501059888017611
 
+### Sources
 
+- AAPL_250d.csv from https://www.nasdaq.com/market-activity/quotes/historical
+- 

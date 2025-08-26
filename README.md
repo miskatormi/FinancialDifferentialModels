@@ -188,13 +188,13 @@ $$ dX_t=a(X_t,t, \text{params})dt+b(X_t,t, \text{params})dW_t $$
 ### Deterministic Models
 #### Single Asset Model, **`single_asset_model.py`** 
 
-*Linear ODE capability of Core solver*
+*Linear ODE simulation capability of the Core solver*
 
 ![Single](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/single_asset_model.png)
 
 #### Multi Asset Model, **`multi_asset_model.py`**
 
-*Coupled non-linear ODE capability of Core solver*
+*Coupled non-linear ODE simulation capability of the Core solver*
 
 ![Multi](https://github.com/miskatormi/FinancialDifferentialModels/blob/main/figures/capital_competition.png)
 
